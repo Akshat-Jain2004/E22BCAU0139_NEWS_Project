@@ -1,42 +1,56 @@
-const apiKey = 'e54c0dcb0c174e1f87425770bb871fdb'; // Your NewsAPI.org API key
-const newsApiUrl = `https://newsapi.org/v2/top-headlines?country=us&pageSize=4&apiKey=${apiKey}`;
+// TheNewsAPI Token
+const apiToken = 'POBpWOEXB4GvDjExVrGuFPtPYtb9ZZ2oUd07Z7ke';
 
-// The container where the news will be displayed
+// API URL for top headlines (US, limit 4)
+const newsApiUrl = `https://api.thenewsapi.com/v1/news/top?api_token=${apiToken}&locale=us&limit=4`;
+
+// Container to inject news items
 const newsContainer = document.getElementById('newsContainer');
 
-// Function to fetch the latest news
+// Fetch latest news and update UI
 function fetchLatestNews() {
   fetch(newsApiUrl)
-    .then(response => response.json())
-    .then(data => {
-      const newNews = data.articles.slice(0, 4); // Fetch only the first 4 news articles
-      updateNewsFeed(newNews);
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
     })
-    .catch(error => console.error('Error fetching news:', error));
+    .then(data => {
+      if (data && data.data) {
+        updateNewsFeed(data.data.slice(0, 4)); // Extract top 4 articles
+      } else {
+        newsContainer.innerHTML = '<p>No news articles found.</p>';
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching news:', error);
+      newsContainer.innerHTML = '<p>Failed to load news. Please try again later.</p>';
+    });
 }
 
-// Function to update the news feed dynamically
+// Render news articles in the DOM
 function updateNewsFeed(newsArray) {
-  newsContainer.innerHTML = ''; // Clear previous news
+  newsContainer.innerHTML = ''; // Clear any existing content
 
   newsArray.forEach(newsItem => {
     const newsDiv = document.createElement('div');
     newsDiv.classList.add('news-item');
-    
+
     newsDiv.innerHTML = `
-      <img src="${newsItem.urlToImage || 'https://via.placeholder.com/300'}" alt="${newsItem.title}">
+      <img src="${newsItem.image_url || 'https://via.placeholder.com/300'}" alt="${newsItem.title}">
       <div class="news-content">
         <h3 class="news-title">${newsItem.title}</h3>
         <p class="news-description">${newsItem.description || 'No description available.'}</p>
         <div class="news-link">
-          <a href="${newsItem.url}" target="_blank">Read More</a>
+          <a href="${newsItem.url}" target="_blank" rel="noopener noreferrer">Read More</a>
         </div>
       </div>
     `;
-    
+
     newsContainer.appendChild(newsDiv);
   });
 }
 
-// Initial fetch to load news when the page loads
+// Load news on page load
 fetchLatestNews();
