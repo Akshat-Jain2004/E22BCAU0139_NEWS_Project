@@ -54,3 +54,4 @@ function updateNewsFeed(newsArray) {
 
 // Load news on page load
 fetchLatestNews();
+setInterval(fetchLatestNews, 30000);
